@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
+    --sidebar-width: 256px;
+    --header-height: 64px;
+  }
+
+  .dark {
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+@layer components {
+
+  /* ─── Glass Cards ─────────────────────────────────────── */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    @apply rounded-2xl transition-all duration-300;
+  }
+
+  .glass-card-hover {
+    @apply glass-card hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  /* ─── Premium Gradient Card ───────────────────────────── */
+  .gradient-card {
+    @apply relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-accent-600 text-white shadow-lg;
+  }
+
+  .gradient-card::before {
+    content: '';
+    @apply absolute inset-0 opacity-20;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.3), transparent 60%);
+  }
+
+  /* ─── Buttons ─────────────────────────────────────────── */
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-400 hover:text-primary-600 dark:hover:text-primary-400 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-semibold rounded-xl active:scale-95 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply flex items-center justify-center gap-2 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200;
+  }
+
+  /* Legacy alias for backwards compat */
+  .glass-button {
+    @apply btn-primary;
+  }
+
+  /* ─── Inputs ──────────────────────────────────────────── */
+  .glass-input {
+    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all duration-200;
+  }
+
+  /* ─── Typography ──────────────────────────────────────── */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-accent-500 font-bold;
+  }
+
+  .premium-gradient-text {
+    @apply gradient-text;
+  }
+
+  /* ─── Sidebar Navigation ──────────────────────────────── */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-medium transition-all duration-200 hover:bg-primary-50 dark:hover:bg-primary-950/40 hover:text-primary-600 dark:hover:text-primary-400;
+  }
+
+  .nav-item-active {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold shadow-lg shadow-primary-500/30;
+  }
+
+  /* ─── Stat Cards ──────────────────────────────────────── */
+  .stat-card {
+    @apply glass-card p-5 flex items-center gap-4 hover:shadow-card-hover transition-all duration-300;
+  }
+
+  .stat-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0;
+  }
+
+  /* ─── Progress Bars ───────────────────────────────────── */
+  .progress-bar {
+    @apply h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+  }
+
+  /* ─── Badges ──────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-blue {
+    @apply badge bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300;
+  }
+
+  .badge-purple {
+    @apply badge bg-accent-100 text-accent-700 dark:bg-accent-950 dark:text-accent-300;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300;
+  }
+
+  .badge-red {
+    @apply badge bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300;
+  }
+
+  .badge-yellow {
+    @apply badge bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300;
+  }
+
+  /* ─── Sidebar link aliases ────────────────────────────── */
+  .sidebar-link {
+    @apply nav-item;
+  }
+
+  .sidebar-link-active {
+    @apply nav-item-active;
+  }
+}
+
+@layer utilities {
+
+  /* ─── Glassmorphism overlay for hero sections ─────────── */
+  .glass-overlay {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* ─── Text gradients ──────────────────────────────────── */
+  .text-gradient-blue {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-300;
+  }
+
+  .text-gradient-purple {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-500 to-accent-300;
+  }
+
+  /* ─── Animated gradient border ────────────────────────── */
+  .border-gradient {
+    border: 1px solid transparent;
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+  }
+
+  /* ─── Scrollbar ───────────────────────────────────────── */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Custom Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
+
+/* ─── Chart tooltip override ──────────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  @apply !rounded-xl !border-0 !shadow-lg;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+/* ─── Framer Motion Page Transition ───────────────────────── */
+.page-container {
+  @apply min-h-screen w-full;
+}
