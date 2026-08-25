@@ -2,7 +2,10 @@
     "name": "finova-backend",
     "version": "1.0.0",
     "description": "Backend for Finova Finance Tracking",
-    "main": "server.js",
+    "main": "src/server.js",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
         "start": "node src/server.js",
         "dev": "nodemon src/server.js"

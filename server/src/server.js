@@ -17,13 +17,50 @@ const io = new Server(server, {
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, '') : '');
+
+const allowedOrigins = [
+    normalizeUrl(process.env.CLIENT_URL),
+    normalizeUrl(process.env.FRONTEND_URL),
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
+].filter(Boolean);
+
+if (process.env.CLIENT_URL) {
+    process.env.CLIENT_URL.split(',').forEach((u) => {
+        const norm = normalizeUrl(u);
+        if (norm && !allowedOrigins.includes(norm)) {
+            allowedOrigins.push(norm);
+        }
+    });
+}
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const normOrigin = normalizeUrl(origin);
+        const isAllowed = allowedOrigins.some(allowed => normOrigin === allowed || normOrigin.endsWith('.vercel.app'));
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.warn('CORS request from origin:', origin);
+            callback(null, true);
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
+
 app.use(express.json());
 
 // Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 100,
 });
 app.use('/api/', limiter);
 
@@ -36,9 +73,22 @@ app.use('/api/auth', authRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/rooms', roomRoutes);
 
-// Placeholder Routes
+const db = require('./database');
+
+// Health & Info endpoints
 app.get('/', (req, res) => {
-    res.json({ message: 'Finova API is running' });
+    res.json({ success: true, message: 'Finova API is running' });
+});
+
+app.get('/api/health', async (req, res) => {
+    const isDbConnected = await db.testConnection();
+    res.json({
+        success: true,
+        message: 'Finova API is running',
+        database: isDbConnected ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+    });
 });
 
 // Socket.IO
@@ -50,14 +100,11 @@ io.on('connection', (socket) => {
         console.log(`Socket ${socket.id} joined room ${roomId}`);
     });
 
-    // Real-time updates
     socket.on('new-expense', (data) => {
-        // data: { roomId, expense }
         io.to(data.roomId).emit('expense-added', data.expense);
     });
 
     socket.on('new-message', (data) => {
-        // data: { roomId, message }
         io.to(data.roomId).emit('message-received', data.message);
     });
 
@@ -70,19 +117,42 @@ io.on('connection', (socket) => {
     });
 });
 
-const { testConnection } = require('./database');
-
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-    const isDbConnected = await testConnection();
-    if (!isDbConnected) {
-        console.error('Server startup aborted due to database connection failure.');
-        process.exit(1);
+const initializeDatabase = async () => {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                full_name TEXT NOT NULL,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                profile_photo TEXT,
+                currency_preference TEXT DEFAULT '₹',
+                theme_preference TEXT DEFAULT 'dark',
+                refresh_token TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('Database schema (users table) verified.');
+    } catch (err) {
+        console.error('Schema initialization error:', err.message);
     }
+};
 
-    server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+const startServer = async () => {
+    server.listen(PORT, '0.0.0.0', async () => {
+        console.log(`Finova Server running on port ${PORT} (0.0.0.0)`);
+        console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+
+        const isDbConnected = await db.testConnection();
+        if (isDbConnected) {
+            await initializeDatabase();
+        } else {
+            console.warn('Database connection warning: PostgreSQL not immediately connected. Health check will report status.');
+        }
     });
 };
 

@@ -1,7 +1,15 @@
 const { Pool } = require('pg');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const connectionString = process.env.DATABASE_URL;
+
+// NeonDB requires SSL connections. Enable SSL when DATABASE_URL contains
+// 'neon.tech' or when running in production.
+const useSSL = connectionString && (connectionString.includes('neon.tech') || isProduction);
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
+    ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 const testConnection = async () => {
@@ -18,8 +26,7 @@ const testConnection = async () => {
 };
 
 pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
-    process.exit(-1);
+    console.error('Unexpected error on idle client:', err.message || err);
 });
 
 module.exports = {

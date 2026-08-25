@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users Table
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name TEXT NOT NULL,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Subjects Table (For personal tracking)
 CREATE TABLE IF NOT EXISTS subjects (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     icon TEXT,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS subjects (
 
 -- Categories Table
 CREATE TABLE IF NOT EXISTS categories (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     icon TEXT,
     color TEXT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- Expenses Table (Personal)
 CREATE TABLE IF NOT EXISTS expenses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES subjects(id) ON DELETE SET NULL,
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS expenses (
 CREATE TYPE room_type AS ENUM ('Personal', 'Friends', 'Family', 'Business', 'Travel', 'Flat');
 
 CREATE TABLE IF NOT EXISTS rooms (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     description TEXT,
     type room_type DEFAULT 'Friends',
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS rooms (
 CREATE TYPE member_role AS ENUM ('Owner', 'Admin', 'Member');
 
 CREATE TABLE IF NOT EXISTS room_members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     role member_role DEFAULT 'Member',
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS room_members (
 
 -- Room Expenses Table
 CREATE TABLE IF NOT EXISTS room_expenses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
     paid_by UUID REFERENCES users(id) ON DELETE CASCADE,
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS room_expenses (
 CREATE TYPE split_type AS ENUM ('Equal', 'Percentage', 'Exact', 'Shares');
 
 CREATE TABLE IF NOT EXISTS expense_splits (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     expense_id UUID REFERENCES room_expenses(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     amount DECIMAL(12, 2) NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS expense_splits (
 
 -- Settlements Table
 CREATE TABLE IF NOT EXISTS settlements (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
     sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
     receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS settlements (
 
 -- Messages Table
 CREATE TABLE IF NOT EXISTS messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
     sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
 -- Notifications Table
 CREATE TABLE IF NOT EXISTS notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     message TEXT NOT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 -- Activity Logs Table
 CREATE TABLE IF NOT EXISTS activity_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
     action TEXT NOT NULL,
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 
 -- Budgets Table
 CREATE TABLE IF NOT EXISTS budgets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
     amount DECIMAL(12, 2) NOT NULL,

@@ -11,9 +11,10 @@ const generateTokens = (user) => {
 exports.register = async (req, res) => {
     try {
         const { fullName, username, email, password } = req.body;
+        const normalizedEmail = email ? email.trim().toLowerCase() : '';
 
         // 1. Validation
-        if (!fullName || !username || !email || !password) {
+        if (!fullName || !username || !normalizedEmail || !password) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields (fullName, username, email, password) are required'
@@ -21,7 +22,7 @@ exports.register = async (req, res) => {
         }
 
         // 2. Check email uniqueness
-        const emailExists = await userRepository.findByEmail(email);
+        const emailExists = await userRepository.findByEmail(normalizedEmail);
         if (emailExists) {
             return res.status(409).json({
                 success: false,
@@ -39,14 +40,19 @@ exports.register = async (req, res) => {
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = await userRepository.create({ fullName, username, email, passwordHash });
+        const user = await userRepository.create({ fullName, username, email: normalizedEmail, passwordHash });
 
         const { accessToken, refreshToken } = generateTokens(user);
         await userRepository.updateRefreshToken(user.id, refreshToken);
 
+        // Strip sensitive fields before sending to frontend
+        const safeUser = { ...user };
+        delete safeUser.password_hash;
+        delete safeUser.refresh_token;
+
         res.status(201).json({
             success: true,
-            user,
+            user: safeUser,
             accessToken,
             refreshToken
         });
@@ -63,15 +69,16 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = email ? email.trim().toLowerCase() : '';
 
-        if (!email || !password) {
+        if (!normalizedEmail || !password) {
             return res.status(400).json({
                 success: false,
                 message: 'Email and password are required'
             });
         }
 
-        const user = await userRepository.findByEmail(email);
+        const user = await userRepository.findByEmail(normalizedEmail);
 
         if (!user) {
             return res.status(404).json({
@@ -91,9 +98,14 @@ exports.login = async (req, res) => {
         const { accessToken, refreshToken } = generateTokens(user);
         await userRepository.updateRefreshToken(user.id, refreshToken);
 
+        // Strip sensitive fields before sending to frontend
+        const safeUser = { ...user };
+        delete safeUser.password_hash;
+        delete safeUser.refresh_token;
+
         res.json({
             success: true,
-            user,
+            user: safeUser,
             accessToken,
             refreshToken
         });

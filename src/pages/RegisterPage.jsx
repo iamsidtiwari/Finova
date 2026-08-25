@@ -17,7 +17,7 @@ const RegisterPage = () => {
             toast.success('Account created successfully!');
             navigate('/login');
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Registration failed');
+            toast.error(err.response?.data?.message || err.message || 'Registration failed');
         }
     };
 
